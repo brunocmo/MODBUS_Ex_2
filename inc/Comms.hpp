@@ -9,6 +9,7 @@
 #include <termios.h>
 #include <bitset>
 #include <iostream>
+#include "crc16.h"
 
 
 class Comms {
@@ -18,6 +19,8 @@ class Comms {
         std::string palavra;
         struct termios options;
         char matricula[4];
+        char enderecoDispositivo;
+        char codigoFuncao;
 
     public:
 
@@ -33,6 +36,9 @@ class Comms {
         void enviarInteiro(int inteiroEnviado);
         void enviarReal(float floatEnviado);
         void enviarString(std::string stringEnviado);
+
+        void escolherDispositivo(char numeroDispositivo);
+        void escolherFuncao(char codigoFuncao);
 
         void solicitar(std::string solicitacao);
         void enviar(std::string solicitacao);

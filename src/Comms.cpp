@@ -53,9 +53,9 @@ void Comms::solicitar(std::string solicitacao){
 
     sleep(1);
 
-    if (teste[0] == 0xA1 || teste[0] == 0xB1 ) {
+    if (teste[1] == 0xA1 || teste[1] == 0xB1 ) {
         receber(1);
-    } else if (teste[0] == 0xA2 || teste[0] == 0xB2 ) {
+    } else if (teste[1] == 0xA2 || teste[1] == 0xB2 ) {
         receber(2);
     } else {
         receber(3);
@@ -64,30 +64,38 @@ void Comms::solicitar(std::string solicitacao){
 
 void Comms::pedidoInteiro() {
 
+    escolherDispositivo(0x23);
+
     char SolicitacaoInteiro;
     SolicitacaoInteiro = 0xA1;
+    unsigned char SolTeste = 0xA1;
+    short crc = calcula_CRC(&SolTeste, 1);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
 
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoInteiro);
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
+
 
     solicitar(stringTemp);
 }
 
 void Comms::pedidoReal() {
 
+    escolherDispositivo(0x23);
+
     char SolicitacaoReal;
     SolicitacaoReal = 0xA2;
 
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoReal);
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
 
     solicitar(stringTemp);
 
@@ -96,21 +104,28 @@ void Comms::pedidoReal() {
 
 void Comms::pedidoString() {
 
+    escolherDispositivo(0x23);
+
     char SolicitacaoString;
     SolicitacaoString = 0xA3;
 
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoString);
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
 
     solicitar(stringTemp);
 
 
 }
 
+void Comms::escolherDispositivo(char numeroDispositivo) {
+    this->enderecoDispositivo = numeroDispositivo;
+}
+
+void Comms::escolherFuncao(char codigoFuncao){
+    this->codigoFuncao = codigoFuncao;
+}
 
 void Comms::enviarInteiro(int inteiroEnviado) {
 
@@ -179,41 +194,6 @@ void Comms::enviarString(std::string stringEnviado) {
     solicitar(stringTemp);
 }
 
-// void Comms::enviar(std::string solicitacao){
-    
-//     init();
-    
-//     unsigned char teste[255];
-
-//     teste[0] = solicitacao.at(0);
-//     teste[1] = solicitacao.at(1);
-
-//     for(unsigned int i{2}; i<solicitacao.length() ; i++) {
-        
-//         if( i < solicitacao.length()-4) {
-//             teste[i] = (solicitacao.at(i));
-//         }else {
-//             teste[i] = (solicitacao.at(i)-48);
-//         }
-        
-//         printf("%d --- %d\n", i, teste[i]);
-//     }
-
-//     int count = write( get_uart0_filestream(), &teste, solicitacao.length());
-
-//     printf("Numero de bytes enviados: %d\n", count);
-
-//     if(count < 0) {
-//         printf("Erro no envio de dados - TX\n");
-//     }
-
-//     sleep(2);
-
-//     receber(3);
-// }
-
-
-
 void Comms::receber(int flag) {
     
     int valorInteiro{0};
@@ -256,13 +236,6 @@ void Comms::receber(int flag) {
 
     close(get_uart0_filestream());
 }
-
-
-
-// int Comms::binToDecimal() {
-    
-// }
-
 
 int Comms::get_uart0_filestream() {
     return uart0_filestream;
