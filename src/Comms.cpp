@@ -67,7 +67,11 @@ void Comms::pedidoInteiro() {
     escolherFuncao(0x23);
     char SolicitacaoInteiro;
     SolicitacaoInteiro = 0xA1;
-    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoInteiro };
+    unsigned char crcPreVerificador[3] { 
+        (unsigned char)enderecoDispositivo, 
+        (unsigned char)codigoFuncao, 
+        (unsigned char)SolicitacaoInteiro 
+        };
     short crc = calcula_CRC(&crcPreVerificador[0], 3);
     char crcConvert[2];
 
@@ -89,7 +93,10 @@ void Comms::pedidoReal() {
     escolherFuncao(0x23);
     char SolicitacaoReal;
     SolicitacaoReal = 0xA2;
-    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoReal };
+    unsigned char crcPreVerificador[3] { 
+        (unsigned char)enderecoDispositivo, 
+        (unsigned char)codigoFuncao, 
+        (unsigned char)SolicitacaoReal };
     short crc = calcula_CRC(&crcPreVerificador[0], 3);
     char crcConvert[2];
 
@@ -112,7 +119,10 @@ void Comms::pedidoString() {
     escolherFuncao(0x23);
     char SolicitacaoString;
     SolicitacaoString = 0xA3;
-    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoString };
+    unsigned char crcPreVerificador[3] { 
+        (unsigned char)enderecoDispositivo, 
+        (unsigned char)codigoFuncao, 
+        (unsigned char)SolicitacaoString };
     short crc = calcula_CRC(&crcPreVerificador[0], 3);
     char crcConvert[2];
 
@@ -141,67 +151,105 @@ void Comms::escolherFuncao(char codigoFuncao){
 
 void Comms::enviarInteiro(int inteiroEnviado) {
 
-    char SolicitacaoInteiro;
-    SolicitacaoInteiro = 0xB1;
-
+    escolherFuncao(0x16);
+    char SolicitacaoInteiro = 0xB1;
     char InteiroBytes[4];
 
     std::memcpy(InteiroBytes, &inteiroEnviado, sizeof(int));
 
+    unsigned char crcPreVerificador[7] { 
+        (unsigned char)enderecoDispositivo, 
+        (unsigned char)codigoFuncao, 
+        (unsigned char)SolicitacaoInteiro, 
+        (unsigned char)InteiroBytes[0],
+        (unsigned char)InteiroBytes[1],
+        (unsigned char)InteiroBytes[2],
+        (unsigned char)InteiroBytes[3],
+        };
+    short crc = calcula_CRC(&crcPreVerificador[0], 7);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
+
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoInteiro);
     stringTemp.push_back(InteiroBytes[0]);
     stringTemp.push_back(InteiroBytes[1]);
     stringTemp.push_back(InteiroBytes[2]);
     stringTemp.push_back(InteiroBytes[3]);
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
-
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
 
     solicitar(stringTemp);
 }
 
 void Comms::enviarReal(float floatEnviado) {
-
-    char SolicitacaoFloat;
-    SolicitacaoFloat = 0xB2;
-
+    escolherFuncao(0x16);
+    char SolicitacaoFloat = 0xB2;
     char RealBytes[4];
 
     std::memcpy(RealBytes, &floatEnviado, sizeof(int));
 
+    unsigned char crcPreVerificador[7] { 
+        (unsigned char)enderecoDispositivo, 
+        (unsigned char)codigoFuncao, 
+        (unsigned char)SolicitacaoFloat, 
+        (unsigned char)RealBytes[0],
+        (unsigned char)RealBytes[1],
+        (unsigned char)RealBytes[2],
+        (unsigned char)RealBytes[3],
+        };
+    short crc = calcula_CRC(&crcPreVerificador[0], 7);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
+
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoFloat);
     stringTemp.push_back(RealBytes[0]);
     stringTemp.push_back(RealBytes[1]);
     stringTemp.push_back(RealBytes[2]);
     stringTemp.push_back(RealBytes[3]);
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
 
     solicitar(stringTemp);
 }
 
 void Comms::enviarString(std::string stringEnviado) {
 
-    char SolicitacaoString;
-    SolicitacaoString = 0xB3;
+    escolherFuncao(0x16);
+    char SolicitacaoString = 0xB3;
+    int quantidadePalavras = (int)(stringEnviado.length());
 
-    std::string contador = stringEnviado;
-    char quantidadePalavras = (int)(contador.length());
+    quantidadePalavras += 3;
+
+    unsigned char crcPreVerificador[255];
+
+    crcPreVerificador[0] = (unsigned char)enderecoDispositivo;
+    crcPreVerificador[1] = (unsigned char)codigoFuncao;
+    crcPreVerificador[2] = (unsigned char)SolicitacaoString;
+
+    for(int i{3}; i<(int)stringEnviado.length(); i++) {
+        crcPreVerificador[i] = (unsigned char)stringEnviado.at(i);
+    }
+
+    short crc = calcula_CRC(&crcPreVerificador[0], quantidadePalavras);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
 
     std::string stringTemp{""};
+    stringTemp.push_back(enderecoDispositivo);
+    stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoString);
-    stringTemp.push_back(quantidadePalavras);
     stringTemp = stringTemp + stringEnviado;
-    stringTemp.push_back(matricula[0]);
-    stringTemp.push_back(matricula[1]);
-    stringTemp.push_back(matricula[2]);
-    stringTemp.push_back(matricula[3]);
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
 
     solicitar(stringTemp);
 }
@@ -237,7 +285,7 @@ void Comms::receber(int flag) {
                 break;
 
             case 3 : 
-                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+1));
+                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer));
                 break;
 
             default:
