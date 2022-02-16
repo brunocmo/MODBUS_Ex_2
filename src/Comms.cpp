@@ -40,7 +40,7 @@ void Comms::solicitar(std::string solicitacao){
     for(unsigned int i{0}; i<solicitacao.length() ; i++) {
         teste[i] = solicitacao.at(i);
 
-        printf("%d --- %d\n", i, teste[i]);
+        printf("%d --- %X\n", i, teste[i]);
     }
 
     int count = write( get_uart0_filestream(), &teste, solicitacao.length());
@@ -64,12 +64,11 @@ void Comms::solicitar(std::string solicitacao){
 
 void Comms::pedidoInteiro() {
 
-    escolherDispositivo(0x23);
-
+    escolherFuncao(0x23);
     char SolicitacaoInteiro;
     SolicitacaoInteiro = 0xA1;
-    unsigned char SolTeste = 0xA1;
-    short crc = calcula_CRC(&SolTeste, 1);
+    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoInteiro };
+    short crc = calcula_CRC(&crcPreVerificador[0], 3);
     char crcConvert[2];
 
     std::memcpy(crcConvert, &crc, sizeof(short));
@@ -87,15 +86,21 @@ void Comms::pedidoInteiro() {
 
 void Comms::pedidoReal() {
 
-    escolherDispositivo(0x23);
-
+    escolherFuncao(0x23);
     char SolicitacaoReal;
     SolicitacaoReal = 0xA2;
+    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoReal };
+    short crc = calcula_CRC(&crcPreVerificador[0], 3);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
 
     std::string stringTemp{""};
     stringTemp.push_back(enderecoDispositivo);
     stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoReal);
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
 
     solicitar(stringTemp);
 
@@ -104,15 +109,22 @@ void Comms::pedidoReal() {
 
 void Comms::pedidoString() {
 
-    escolherDispositivo(0x23);
-
+    escolherFuncao(0x23);
     char SolicitacaoString;
     SolicitacaoString = 0xA3;
+    unsigned char crcPreVerificador[3] { enderecoDispositivo, codigoFuncao, SolicitacaoString };
+    short crc = calcula_CRC(&crcPreVerificador[0], 3);
+    char crcConvert[2];
+
+    std::memcpy(crcConvert, &crc, sizeof(short));
 
     std::string stringTemp{""};
     stringTemp.push_back(enderecoDispositivo);
     stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoString);
+    stringTemp.push_back(crcConvert[0]);
+    stringTemp.push_back(crcConvert[1]);
+
 
     solicitar(stringTemp);
 

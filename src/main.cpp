@@ -4,6 +4,8 @@ int main() {
 
     Comms ardu;
 
+    ardu.escolherDispositivo(0x01);
+
     int selecaoMenu{0};
     int selecaoSubmenu{0};
     int inteiroEnviar{0};
