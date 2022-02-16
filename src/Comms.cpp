@@ -53,9 +53,9 @@ void Comms::solicitar(std::string solicitacao){
 
     sleep(1);
 
-    if (teste[1] == 0xA1 || teste[1] == 0xB1 ) {
+    if (teste[2] == 0xA1 || teste[2] == 0xB1 ) {
         receber(1);
-    } else if (teste[1] == 0xA2 || teste[1] == 0xB2 ) {
+    } else if (teste[2] == 0xA2 || teste[2] == 0xB2 ) {
         receber(2);
     } else {
         receber(3);
@@ -237,7 +237,7 @@ void Comms::receber(int flag) {
                 break;
 
             case 3 : 
-                printf("Mensagem de comprimento %d: %s\n", rx_length, rx_buffer);
+                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+1));
                 break;
 
             default:
