@@ -1,6 +1,8 @@
-# Visual Studio Code C++ Template
+# Exercício 2 - UART-MODBUS
 
-Template for building and debugging C++ files at Visual Studio Code
+Exercício de comunicação UART utilizando o protocolo MODBUS na Raspberry Pi
+
+Encontrado no [link](https://gitlab.com/fse_fga/exercicios/exercicio-2-uart-modbus)
 
 ***
 
