@@ -261,6 +261,9 @@ void Comms::receber(int flag) {
 
     if(get_uart0_filestream() != -1) {
 
+        unsigned char verificador[2];
+        short crcRecebido;
+
         unsigned char rx_buffer[100];
         int rx_length = read(get_uart0_filestream(), (void*)rx_buffer, 100);
         if(rx_length < 0){
@@ -274,6 +277,29 @@ void Comms::receber(int flag) {
             {
             case 1 : 
 
+                verificador[0] = rx_buffer[7];
+                verificador[1] = rx_buffer[8];
+
+                std::memcpy(&crcRecebido, &verificador[0], sizeof(short));
+
+                unsigned char crcPreVerificador[7] { 
+                    (unsigned char)rx_buffer[0], 
+                    (unsigned char)rx_buffer[1], 
+                    (unsigned char)rx_buffer[2], 
+                    (unsigned char)rx_buffer[3],
+                    (unsigned char)rx_buffer[4],
+                    (unsigned char)rx_buffer[5],
+                    (unsigned char)rx_buffer[6],
+                    };
+                short crc = calcula_CRC(&crcPreVerificador[0], 7);
+                
+                
+                if( crcRecebido == crc ) {
+                    printf("CRC verificado com sucesso!!! \n");
+                } else {
+                    printf("CRC falhou na verificao");
+                }
+
                 std::memcpy(&valorInteiro, rx_buffer, sizeof(int));
 
                 printf("Mensagem de comprimento %d: %d\n", rx_length, valorInteiro);
@@ -285,7 +311,7 @@ void Comms::receber(int flag) {
                 break;
 
             case 3 : 
-                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer));
+                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+1) );
                 break;
 
             default:
