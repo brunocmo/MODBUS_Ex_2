@@ -258,6 +258,8 @@ void Comms::receber(int flag) {
     
     int valorInteiro{0};
     float valorPontoFlut{0.0f};
+    short crc;
+    unsigned char crcPreVerificador[7];
 
     if(get_uart0_filestream() != -1) {
 
@@ -282,18 +284,12 @@ void Comms::receber(int flag) {
 
                 std::memcpy(&crcRecebido, &verificador[0], sizeof(short));
 
-                unsigned char crcPreVerificador[7] { 
-                    (unsigned char)rx_buffer[0], 
-                    (unsigned char)rx_buffer[1], 
-                    (unsigned char)rx_buffer[2], 
-                    (unsigned char)rx_buffer[3],
-                    (unsigned char)rx_buffer[4],
-                    (unsigned char)rx_buffer[5],
-                    (unsigned char)rx_buffer[6],
-                    };
-                short crc = calcula_CRC(&crcPreVerificador[0], 7);
-                
-                
+                for(int k{0}; k<7; k++) {
+                    crcPreVerificador[k] = (unsigned char)rx_buffer[k];
+                }
+
+                crc = calcula_CRC(&crcPreVerificador[0], 7);
+                        
                 if( crcRecebido == crc ) {
                     printf("CRC verificado com sucesso!!! \n");
                 } else {
