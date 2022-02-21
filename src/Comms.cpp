@@ -275,44 +275,48 @@ void Comms::receber(int flag) {
             printf("Nenhum dado disponível\n");
         } else {
 
-            switch (flag)
-            {
-            case 1 : 
-
-                verificador[0] = rx_buffer[7];
-                verificador[1] = rx_buffer[8];
-
-                std::memcpy(&crcRecebido, &verificador[0], sizeof(short));
-
-                for(int k{0}; k<7; k++) {
-                    crcPreVerificador[k] = (unsigned char)rx_buffer[k];
-                }
-
-                crc = calcula_CRC(&crcPreVerificador[0], 7);
-                        
-                if( crcRecebido == crc ) {
-                    printf("CRC verificado com sucesso!!! \n");
-                } else {
-                    printf("CRC falhou na verificao");
-                }
-
-                std::memcpy(&valorInteiro, rx_buffer, sizeof(int));
-
-                printf("Mensagem de comprimento %d: %d\n", rx_length, valorInteiro);
-                break;
-
-            case 2 : 
-                std::memcpy(&valorPontoFlut, rx_buffer, 4);
-                printf("Mensagem de comprimento %d: %f\n", rx_length, valorPontoFlut);
-                break;
-
-            case 3 : 
-                printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+1) );
-                break;
-
-            default:
-                break;
+            for(int k{0}; k<(rx_length-2); k++) {
+                crcPreVerificador[k] = (unsigned char)rx_buffer[k];
             }
+
+            verificador[0] = rx_buffer[(rx_length-2)];
+            verificador[1] = rx_buffer[(rx_length-1)];
+
+            std::memcpy(&crcRecebido, &verificador[0], sizeof(short));
+
+            crc = calcula_CRC(&crcPreVerificador[0], (rx_length-2));
+                    
+            if( crcRecebido == crc ) {
+
+                printf("CRC verificado com sucesso!!! \n");
+
+                switch (flag)
+                {
+                case 1 : 
+
+                    std::memcpy(&valorInteiro, &rx_buffer[3], sizeof(int));
+
+                    printf("Mensagem de comprimento %d: %d\n", rx_length, valorInteiro);
+                    break;
+
+                case 2 : 
+                    std::memcpy(&valorPontoFlut, &rx_buffer[3], sizeof(int));
+                    printf("Mensagem de comprimento %d: %f\n", rx_length, valorPontoFlut);
+                    break;
+
+                case 3 : 
+                    printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+3) );
+                    break;
+
+                default:
+                    break;
+                }
+
+
+            } else {
+                printf("CRC falhou na verificao");
+            }
+
         }
     }
 
