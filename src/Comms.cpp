@@ -225,17 +225,18 @@ void Comms::enviarString(std::string stringEnviado) {
     escolherFuncao(0x16);
     char SolicitacaoString = 0xB3;
     int quantidadePalavras = (int)(stringEnviado.length());
-
-    quantidadePalavras += 3;
-
+    char quantidadeEmChar = stringEnviado.length();
     unsigned char crcPreVerificador[255];
+
+    quantidadePalavras += 4;
 
     crcPreVerificador[0] = (unsigned char)enderecoDispositivo;
     crcPreVerificador[1] = (unsigned char)codigoFuncao;
     crcPreVerificador[2] = (unsigned char)SolicitacaoString;
+    crcPreVerificador[3] = (unsigned char)(stringEnviado.length());
 
-    for(int i{3}; i<(int)stringEnviado.length(); i++) {
-        crcPreVerificador[i] = (unsigned char)stringEnviado.at(i);
+    for(int i{4}; i<(int)(stringEnviado.length() + 4); i++) {
+        crcPreVerificador[i] = (unsigned char)stringEnviado.at(i-4);
     }
 
     short crc = calcula_CRC(&crcPreVerificador[0], quantidadePalavras);
@@ -247,6 +248,7 @@ void Comms::enviarString(std::string stringEnviado) {
     stringTemp.push_back(enderecoDispositivo);
     stringTemp.push_back(codigoFuncao);
     stringTemp.push_back(SolicitacaoString);
+    stringTemp.push_back(quantidadeEmChar);
     stringTemp = stringTemp + stringEnviado;
     stringTemp.push_back(crcConvert[0]);
     stringTemp.push_back(crcConvert[1]);
@@ -305,7 +307,7 @@ void Comms::receber(int flag) {
                     break;
 
                 case 3 : 
-                    printf("Mensagem de comprimento %d: %s\n", rx_length, (rx_buffer+3) );
+                    printf("Mensagem de comprimento %c: %s\n", rx_buffer[3], (rx_buffer+4) );
                     break;
 
                 default:
