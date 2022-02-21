@@ -307,7 +307,7 @@ void Comms::receber(int flag) {
                     break;
 
                 case 3 : 
-                    printf("Mensagem de comprimento %c: %s\n", rx_buffer[3], (rx_buffer+4) );
+                    printf("Mensagem de comprimento %d: %s\n", rx_buffer[3], (rx_buffer+4) );
                     break;
 
                 default:
