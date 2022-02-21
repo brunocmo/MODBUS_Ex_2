@@ -17,7 +17,7 @@ int main() {
     printf(" 2 - Envia Dados\n");
     printf(" 0 - Sair\n");
 
-    scanf("%d", &selecaoMenu);
+    std::cin >> selecaoMenu;
 
     system("clear");
 
@@ -30,7 +30,7 @@ int main() {
             printf(" 3 - Solicitar String\n");
             printf(" 0 - Sair\n");
 
-            scanf("%d", &selecaoSubmenu);
+            std::cin >> selecaoSubmenu;
 
             system("clear");
 
@@ -59,7 +59,7 @@ int main() {
             printf(" 3 - Enviar String\n");
             printf(" 0 - Sair\n");
 
-            scanf("%d", &selecaoSubmenu);
+            std::cin >> selecaoSubmenu;
 
             system("clear");
 
@@ -76,8 +76,9 @@ int main() {
                     ardu.enviarReal(realEnviar);
                     break;
                 case 3:
-                    printf("Digite uma mensagem: ");
-                    std::cin >> stringEnviar;
+                    std::cout << "Digite uma mensagem: " << '\n';
+                    getchar();
+                    std::getline (std::cin,stringEnviar);
                     ardu.enviarString(stringEnviar);
                     break;
                 case 0:
