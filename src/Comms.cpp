@@ -259,7 +259,7 @@ void Comms::receber(int flag) {
     int valorInteiro{0};
     float valorPontoFlut{0.0f};
     short crc;
-    unsigned char crcPreVerificador[7];
+    unsigned char crcPreVerificador[255];
 
     if(get_uart0_filestream() != -1) {
 
